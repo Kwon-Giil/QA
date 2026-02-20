@@ -109,8 +109,13 @@ Synology Chat (Webhook 메시지 수신)
 
 상세 내용은 아래 문서를 참고해주세요.
 
-- jira 웹훅 메시지 멘트 초안
-- Jira 웹훅 알림 서비스 결과 보고
+- [jira]: https://github.com/Kwon-Giil/QA/blob/master/Jira/jira-webhook/jira%20%EC%9B%B9%ED%9B%85%20%EB%A9%94%EC%8B%9C%EC%A7%80%20%EB%A9%98%ED%8A%B8%20%EC%B4%88%EC%95%88.txt	"jira 웹훅 메시지 초안"
+
+  
+
+- [Jira]: https://github.com/Kwon-Giil/QA/blob/master/Jira/jira-webhook/Jira%20%EC%9B%B9%ED%9B%85%20%EC%95%8C%EB%A6%BC%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EA%B2%B0%EA%B3%BC%20%EB%B3%B4%EA%B3%A0%EC%84%9C.pdf	"Jira 웹훅 알림 서비스 결과 보고"
+
+  
 
 ------
 
@@ -120,7 +125,11 @@ Synology Chat (Webhook 메시지 수신)
 
 ### 알림 메시지 예시
 
-(지라 웹훅 결과 이미지 파일 참고)
+(
+
+[지라]: https://github.com/Kwon-Giil/QA/blob/master/Jira/jira-webhook/%EC%A7%80%EB%9D%BC%20%EC%9B%B9%ED%9B%85%20%EA%B2%B0%EA%B3%BC%EB%AC%BC.png	"지라 웹훅 결과물"
+
+ 참고)
 
 ------
 
