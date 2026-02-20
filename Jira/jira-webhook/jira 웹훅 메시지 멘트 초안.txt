@@ -1,0 +1,120 @@
+이슈 생성 시 알림
+
+이슈 생성 이벤트 정의
+
+기존: 신규 담당자 배정 (오토메이션으로 배정되었을 때) --> 신규 bts 키 생성되었을 때로 변경 필요
+
+프로젝트 명: [project name]
+
+[reporter]가 [issue-id] [issue title] 이/가 생성했습니다.
+
+담당자: [assignee]
+
+이슈 확인하기: [issue url]
+
+------------
+
+이슈 담당자 배정 --> 보고자, 담당자에게 발송
+
+프로젝트 명: [project name]
+
+[issue-id] [issue title]의 담당자로 배정되었습니다.
+
+------------------
+
+프로젝트 명: [project name]
+
+[issue-id] [issue title]의 담당자로 [pre assignee]이/가 [current assignee]로 변경했습니다.
+
+이슈 확인하기: [issue url]
+
+---------------------
+
+이슈 상태 변경 --> 보고자, 담당자에게 발송
+
+[issue-id][issue title]의 상태가 [issue status]로 변경되었습니다.
+
+[이전 issue status] --> [현재 issue status]
+
+이슈 확인하기: [issue url]
+
+-----------------------------
+
+이슈 우선 순위 변경 --> 담당자, 보고자에게 발송
+
+[issue-id][issue title]의 상태가 [issue priority]로 변경되었습니다.
+
+[이전 issue priority] --> [현재 issue priority]
+
+이슈 확인하기: [issue url]
+
+--------------
+
+이슈 연동 --> 해당 이슈에는 담당자, 보고자에게 발송, 상위 이슈의 경우 해당 이슈의 보고자에게만 발송
+
+[issue-id] 와 [issue-id]이 연결되었습니다.
+
+연결된 이슈 확인하기
+ 
+[issue url]
+[issue url]
+
+-------------------
+
+이슈 하위 작업 생성
+
+[issue id][issue title]의 하위 작업이 생성되었습니다.
+
+생성된 하위 작업: [issue id][issue title]
+하위 작업 확인하기: [sub task url]
+
+-----------------
+
+코멘트 --> 보고자, 담당자 모두 발송
+
+[issue-id][issue title] 이슈에 [comment 단 사람 id] 이/가 코멘트를 남겼습니다.
+
+[댓글 내용]
+
+이슈 확인하기: [issue url]
+
+-------------------
+
+이슈 기간 설정된 경우 (추후 jira 내 wbs ghantt 활용 시 재 논의)
+
+
+이슈 시작일 ~ 종료일 설정된 경우 --> 담당자에게 발송
+
+이슈 기간 초기 설정 시
+[issue id] [issue title] 이/가 [reporter]에 의해 [assignnee]에게 [begin date] ~ [end date]의 기간으로 설정되었습니다.
+
+이슈 확인하기: [issue url]
+
+---------
+
+이슈 기간 변동 시
+[issue id] [issue title]의 작업 기간이 [begin date] ~ [end date]로 변경되었습니다.
+
+이슈 확인하기: [issue url]
+
+----------
+
+작업 기간이 설정된 경우 마감 기한1일 전 알림 발송 (작업자들 리마인드 차원에서 1일에만 전송하는 걸로 변경)
+
+[issue id] [issue title] 마감까지 1일 남았습니다. 
+해당 이슈를 확인해주세요: [issue url]
+
+------------------
+
+이슈 마감 기간을 지키지 못했을 때 --> 보고자에게 발송 (삭제: 스팸화 우려 있음)
+(해당 알림은 마감일로부터 +1일 이후 1일 1회 발송, issue status != resolved, closed인 경우 계속 발송)
+(단, 알림이 갔을 때 end date 변경 시 해당 알림 안 가게 설정되어야 하며 reopen된 경우에는 알림이 가지 않아야 함)
+
+[issue id][issue title]이 예정 마감 기한으로부터 [n]일 지연되고 있습니다.
+[assignee]에게 문의하여 확인하시거나 기간을 변경하시기 바랍니다.
+
+------------------
+
+해당 공정을 마감하였을 경우 --> 보고자에게 발송
+(if issue status == resolved or closed and updated date =< end date)
+[assignee]가 [issue id] [issue title]를 [updated date]에 작업을 완료하였습니다.
