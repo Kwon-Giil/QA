@@ -1,0 +1,53 @@
+name: CI & Docker Push Workflow
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. 소스코드 내려받기
+        uses: actions/checkout@v7
+
+      - name: 2. GitHub Container Registry 로그인
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - - name: 3. 도커 이미지 빌드 및 GHCR 업로드
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG="ghcr.io/${REPO_NAME}:latest"
+
+          # 1) Dockerfile을 읽어서 내 도커 이미지로 빌드 (오늘의 핵심)
+          docker build -t ${IMAGE_TAG} .
+
+          # 2) GHCR에 업로드(Push)
+          docker push ${IMAGE_TAG}
+
+      - name: 4. 업로드된 이미지로 컨테이너 실행 및 테스트
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG="ghcr.io/${REPO_NAME}:latest"
+
+          docker run -d -p 8080:80 --name test-app ${IMAGE_TAG}
+          sleep 3
+          curl -f http://localhost:8080
+
+      - name: 5. 환경변수와 Secret 출력 테스트
+        env:
+          APP_ENV: "production"                      # 일반 환경변수 (직접 입력)
+          API_KEY: ${{ secrets.MY_API_KEY }}        # 아까 만든 Secret 불러오기
+        run: |
+          echo "현재 실행 환경: $APP_ENV"
+          echo "가져온 API 키: $API_KEY"
