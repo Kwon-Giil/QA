@@ -26,13 +26,12 @@ jobs:
 
       - name: 3. 도커 이미지 빌드 및 GHCR 업로드
         run: |
+          # 1) github.repository(kwon-giil/QA)를 모두 소문자(kwon-giil/qa)로 변환해서 변수에 저장
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_TAG="ghcr.io/${REPO_NAME}:latest"
 
-          # 1) Dockerfile을 읽어서 내 도커 이미지로 빌드 (오늘의 핵심)
+          # 2) 변환된 소문자 태그로 빌드 및 푸시
           docker build -t ${IMAGE_TAG} .
-
-          # 2) GHCR에 업로드(Push)
           docker push ${IMAGE_TAG}
 
       - name: 4. 업로드된 이미지로 컨테이너 실행 및 테스트
