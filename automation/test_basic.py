@@ -1,57 +1,64 @@
-from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
-import time
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from dotenv import load_dotenv
 import os
 
-# .env 파일에서 환경 변수 불러오기
+# 1. 환경 변수 로드
 load_dotenv()
-
-# 환경 변수에서 안전하게 아이디/비밀번호 가져오기
 USER_ID = os.getenv("MONEYMOVE_ID")
 USER_PW = os.getenv("MONEYMOVE_PW")
 
 def test_moneymove_login():
-
     with sync_playwright() as p:
-        # 1. 브라우저 실행 (화면이 보이도록 headless=False 설정)
+        # 브라우저 실행
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
-
-        # 2. moneymove.ai 접속
-        print("moneymove.ai 접속 중...")
+        
+        print("🚀 moneymove.ai 접속 중...")
         page.goto("https://moneymove.ai/")
-
-        # 3. 페이지 타이틀 확인
-        print(f"페이지 타이틀: {page.title()}")
-        time.sleep(2) # 페이지 로딩 대기
-
-        # 4. '로그인' 텍스트를 가진 요소 찾아 클릭
-        print("로그인 버튼 찾는 중...")
-           
+        
+        # 2. 메인 페이지의 '로그인' 버튼 클릭 (텍스트로 안정적으로 타겟팅)
+        print("로그인 페이지로 이동 중...")
         page.get_by_text("로그인").first.click()
-        time.sleep(2) # 로그인 페이지 로딩 대기
-
-        # 로그인 페이지 로딩 대기 및 아이디/비밀번호 입력
-        print("아이디 및 비밀번호 입력 중...")
         
-        # 아이디 입력창 찾아서 채우기 
-        # (type이 email이거나 텍스트 계열인 input을 타겟팅)
+        # 3. 아이디 및 비밀번호 입력
+        print("아이디/비밀번호 입력 중...")
         page.locator("#userId").fill(USER_ID)
-        
-        # 비밀번호 입력창 찾아서 채우기
         page.locator("#loginPassword").fill(USER_PW)
-
-        print("로그인 정보 입력 완료!")
         
-        # 최종 로그인 제출 버튼 클릭 (필요시 활성화)
-        page.get_by_role("button", name="로그인").last.click()
+        # 4. 로그인 버튼 클릭 
+        # (만약 아래 셀렉터로 안 눌리면 실제 제출 버튼의 텍스트나 클래스로 수정 필요)
+        print("로그인 버튼 클릭!")
+        page.locator("button[onclick*='loginConfirm']").click()
         
-        # 5. 결과 확인을 위해 3초 대기
-        page.wait_for_timeout(3000)
+        try:            
+            # 결과 검증 (실패 팝업 vs 성공 마이페이지 버튼)
+            error_popup = page.locator("#alertPopup")
+            my_page_btn = page.locator("a.btn-gnb[href*='/invest/my-page/main']")
+            
+            # 실패 팝업이 뜨는 경우 (타임아웃 4초)
+            if error_popup.is_visible(timeout=4000):
+                fail_title = page.locator("#alert-title").inner_text()
+                fail_contents = page.locator("#alert-contents").inner_text()
+                print(f"로그인 실패: [{fail_title}] {fail_contents}")
+            
+            # 마이페이지 버튼이 보이는 경우 (타임아웃 6초)
+            elif my_page_btn.is_visible(timeout=6000):
+                print("로그인 성공!")
+            
+            # 둘 다 해당 안 될 때
+            else:
+                print("[WARNING] 상태 불명")
 
-        # 6. 브라우저 종료
-        browser.close()
-        print("테스트 완료!")
+        except Exception as e:
+            # 🚨 예기치 않은 에러 발생 시 스크린샷 저장
+            print(f"[CRITICAL ERROR] 예외 발생: {e}")
+            page.screenshot(path="login_error_debug.png", full_page=True)
+            print("디버깅용 스크린샷 저장 완료: login_error_debug.png")
+        
+        # 테스트 확인을 위해 잠시 대기 (필요시 제거 가능)
+    input("테스트 완료")
+    browser.close()
 
 if __name__ == "__main__":
     test_moneymove_login()
