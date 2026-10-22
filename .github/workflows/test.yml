@@ -21,6 +21,28 @@ jobs:
       - name: Build Docker image
         run: docker build -t moneymove-e2e .
 
+      # env 파일 변수 들어오는 지부터 확인
+      - name: Debug Secrets Check
+        run: |
+          echo "=== GitHub Secrets Validation ==="
+          if [ -z "${{ secrets.USER_ID }}" ]; then
+            echo "🔴 [CRITICAL] USER_ID가 비어있습니다!"
+          else
+            echo "🟢 [OK] USER_ID 존재함"
+          fi
+
+          if [ -z "${{ secrets.USER_PW }}" ]; then
+            echo "🔴 [CRITICAL] USER_PW가 비어있습니다!"
+          else
+            echo "🟢 [OK] USER_PW 존재함"
+          fi
+
+          if [ -z "${{ secrets.MEMBER_NAME }}" ]; then
+            echo "🔴 [CRITICAL] MEMBER_NAME이 비어있습니다!"
+          else
+            echo "🟢 [OK] MEMBER_NAME 존재함"
+          fi
+
       # 3. GitHub Secrets를 도커 환경변수로 직접 주입하여 테스트 실행
       - name: Run E2E Tests in Docker
         run: |
