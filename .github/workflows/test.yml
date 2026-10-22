@@ -61,5 +61,4 @@ jobs:
             -e USER_ID="${{ secrets.USER_ID }}" \
             -e USER_PW="${{ secrets.USER_PW }}" \
             -e MEMBER_NAME="${{ secrets.MEMBER_NAME }}" \
-            moneymove-e2e \
-            pytest
+            moneymove-e2e pytest
