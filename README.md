@@ -52,7 +52,10 @@ Jira에서 발생한 이슈 이벤트를 Webhook으로 수신하여 NAS 서버�
 
 ※ 포트폴리오용으로 작성된 문서입니다.
 
-
+# automation
+ [폴더 바로가기](./automation)
+- playwright를 사용한 웹 페이지 테스트 자동화 샘플
+- playwright 및 ci/cd까지 자동화 시도
 
 # QA 교육 및 실습
 
