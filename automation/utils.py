@@ -15,4 +15,4 @@ def secure_input(page, selector, value):
         }""",
         [selector, value]
     )
-    print(f"✨ 보안 우회 주입 완료 [{selector}]")
+    print(f"보안 우회 주입 완료 [{selector}]")

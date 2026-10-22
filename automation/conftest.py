@@ -12,12 +12,15 @@ def page():
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            headless=headless_mode, 
-            # 헤드리스 모드일 때는 최대화 창 인자가 의미 없으므로 로컬(False)일 때만 적용
-            args=["--start-maximized"] if not headless_mode else []
-        )
+    headless=True,
+    args=[
+        "--disable-blink-features=AutomationControlled",
+        "--no-sandbox",
+        "--disable-dev-shm-usage"
+    ]
+)
         
-        # 헤드리스 환경에서는 뷰포트 크기를 명시해주어야 UI 깨짐을 방지할 수 있습니다.
+        # 헤드리스 환경에서는 뷰포트 크기를 명시해주어야 UI 깨짐을 방지
         context_args = {"no_viewport": True} if not headless_mode else {"viewport": {"width": 1920, "height": 1080}}
         
         context = browser.new_context(**context_args)
@@ -39,4 +42,4 @@ def pytest_runtest_makereport(item, call):
             os.makedirs("screenshots", exist_ok=True)
             screenshot_path = f"screenshots/{item.name}_fail.png"
             page.screenshot(path=screenshot_path, full_page=True)
-            print(f"\n❌ [TEST FAILED] 스크린샷 저장됨: {screenshot_path}")
+            print(f"\n [TEST FAILED] 스크린샷 저장됨: {screenshot_path}")

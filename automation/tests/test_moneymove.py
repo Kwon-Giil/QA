@@ -19,6 +19,9 @@ def test_moneymove_e2e_flow(page):
     try:
         # 1. 로그인 수행
         page.get_by_text("로그인").first.click()
+
+        print(f"DEBUG - USER_ID: {USER_ID}")
+        print(f"DEBUG - USER_PW is set?: {bool(USER_PW)} (Length: {len(USER_PW) if USER_PW else 0} characters)")
         
         secure_input(page, "#userId", USER_ID)
         secure_input(page, "#loginPassword", USER_PW)
