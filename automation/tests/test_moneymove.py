@@ -5,9 +5,9 @@ from utils import secure_input
 
 # 환경변수 불러오기
 load_dotenv()
-USER_ID = os.getenv("MONEYMOVE_ID")
-USER_PW = os.getenv("MONEYMOVE_PW")
-MEMBER_NAME = os.getenv("MONEYMOVE_MEMBER_NAME")
+USER_ID = os.getenv("USER_ID")
+USER_PW = os.getenv("USER_PW")
+MEMBER_NAME = os.getenv("MEMBER_NAME")
 
 
 def test_moneymove_e2e_flow(page):
