@@ -50,9 +50,12 @@ jobs:
             -e USER_ID="${{ secrets.USER_ID }}" \
             -e USER_PW="${{ secrets.USER_PW }}" \
             -e MEMBER_NAME="${{ secrets.MEMBER_NAME }}" \
-            moneymove-e2e python -c "import os; print('Container USER_ID:', os.getenv('USER_ID'))"  
-            moneymove-e2e python -c "import os; print('Container USER_PW:', os.getenv('USER_PW'))"
-            moneymove-e2e python -c "import os; print('Container MEMBER_NAME:', os.getenv('MEMBER_NAME'))"
+            moneymove-e2e python -c "
+          import os
+          print('Container USER_ID:', os.getenv('USER_ID'))
+          print('Container USER_PW:', os.getenv('USER_PW'))
+          print('Container MEMBER_NAME:', os.getenv('MEMBER_NAME'))
+          "
 
       # 3. GitHub Secrets를 도커 환경변수로 직접 주입하여 테스트 실행
       - name: Run E2E Tests in Docker
