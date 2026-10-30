@@ -107,6 +107,8 @@ Runner 실행 프로그램이 종료되어 있거나 GitHub와 연결되지 않�
 - GitHub Actions를 통한 테스트 자동화 워크플로우 구성
 - Self-hosted Runner를 활용해 로컬 네트워크 환경에서 CI 작업 실행 확인
 
+![screenshot](./깃허브액션스작동.png)
+
 ## 8. 트러블슈팅
 
 ### 8-1. Docker 빌드 파일 경로 오류
