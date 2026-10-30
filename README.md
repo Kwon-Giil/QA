@@ -53,9 +53,12 @@ Jira에서 발생한 이슈 이벤트를 Webhook으로 수신하여 NAS 서버�
 ※ 포트폴리오용으로 작성된 문서입니다.
 
 # automation
+
  [폴더 바로가기](./automation)
-- playwright를 사용한 웹 페이지 테스트 자동화 샘플
-- playwright 및 ci/cd까지 자동화 시도
+
+- Python과 Playwright를 활용한 머니무브 웹 페이지 E2E 테스트 자동화
+- 로그인 → 투자 신청 → 신청 취소 주요 사용자 흐름 테스트
+- Docker 및 GitHub Actions를 연동한 테스트 실행 환경 구성 (Self-hosted Runner 활용)
 
 # QA 교육 및 실습
 
