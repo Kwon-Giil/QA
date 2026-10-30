@@ -145,16 +145,24 @@ def test_moneymove_e2e_flow(page):
             raise Exception(f"[INTEGRITY ERROR] 2단계 검증 실패! 1번({selected_bond_id})과 동의 화면 번호({consent_bond_id}) 불일치")
         print(f"✅ [2단계 정합성 통과] 티켓 번호 일치 확인: {consent_bond_id}")
 
-        # 공시지표 동의 및 서명
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         time.sleep(1)
 
+        # 1. 공시지표 확인 체크박스 선택
         disclosure_label = page.locator("label[for='chk1']")
         disclosure_label.wait_for(state="visible", timeout=3000)
         disclosure_label.scroll_into_view_if_needed()
         disclosure_label.click()
         time.sleep(0.5)
 
+        # 2. 연계투자약관 확인 [필수] 체크박스 선택
+        invest_terms_label = page.locator("label[for='chk-invest-terms']")
+        invest_terms_label.wait_for(state="visible", timeout=3000)
+        invest_terms_label.scroll_into_view_if_needed()
+        invest_terms_label.click()
+        time.sleep(0.5)
+
+        # 3. 서명 입력 및 다음 단계 진행
         sign_input = page.locator("#js_sign-input")
         sign_input.wait_for(state="visible", timeout=3000)
         sign_input.scroll_into_view_if_needed()
