@@ -4,7 +4,7 @@
 
 머니무브 웹 페이지의 주요 사용자 흐름을 대상으로 E2E(End-to-End) 테스트 자동화를 구현한 프로젝트
 
-Python과 Playwright를 활용해 로그인부터 투자 신청 및 신청 취소까지의 과정을 자동화하고, Docker와 GitHub Actions를 연동해 테스트 실행 환경 및 CI 자동화 구성 경험 확보 목적
+Python과 Playwright를 활용해 로그인부터 투자 신청 및 신청 취소까지의 과정을 자동화하고, Docker와 GitHub Actions를 연동해 테스트 실행 환경 및 CI 자동화 구성 경험 확보
 
 GitHub-hosted Runner에서 발생한 외부 서비스 접근 문제를 해결하기 위해 로컬 PC에 Self-hosted Runner를 구성하고, 해당 환경에서 GitHub Actions 워크플로우가 실행되도록 설정
 
@@ -56,7 +56,7 @@ GitHub-hosted Runner에서 발생한 외부 서비스 접근 문제를 해결하
 - Python
 - Docker
 - Playwright 및 프로젝트 의존성
-- 테스트 실행에 필요한 환경변수
+- 테스트 실행에 필요한 환경 변수
 
 ### 환경변수 설정
 
