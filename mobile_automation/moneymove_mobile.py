@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
 from appium.webdriver.common.appiumby import AppiumBy
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
@@ -75,23 +75,42 @@ def run_moneymove_test():
         first_detail_button.click()
         time.sleep(3)
 
-        scroll_to_bond = (
-            'new UiScrollable(new UiSelector().scrollable(true))'
-            '.scrollIntoView(new UiSelector().textStartsWith("TK_"))'
-        )
+        # 화면 가시성 우선 체크를 통한 스크롤 튕김 방지
+        print("🔍 첫 번째 상품의 채권 번호(`TK_`) 찾는 중...")
+        captured_bond_text = "TK_UNKNOWN"
         try:
-            bond_element = driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, scroll_to_bond)
-            print(f"[성공] 가져온 채권 번호: {bond_element.text}")
+            visible_bonds = driver.find_elements(AppiumBy.XPATH, '//*[starts-with(@text, "TK_")]')
+            if visible_bonds:
+                captured_bond_text = visible_bonds[0].text
+                print(f"[성공] 화면에 이미 노출된 채권 번호 획득: {captured_bond_text}")
+            else:
+                scroll_to_bond = (
+                    'new UiScrollable(new UiSelector().scrollable(true))'
+                    '.scrollIntoView(new UiSelector().textStartsWith("TK_"))'
+                )
+                bond_element = driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, scroll_to_bond)
+                captured_bond_text = bond_element.text
+                print(f"[성공] 스크롤하여 가져온 채권 번호: {captured_bond_text}")
         except NoSuchElementException:
             print("[오류] 채권 번호 미출력")
 
-        scroll_to_button = (
-            'new UiScrollable(new UiSelector().scrollable(true))'
-            '.scrollIntoView(new UiSelector().text("상품 선택하기"))'
-        )
-        select_btn = driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, scroll_to_button)
-        select_btn.click()
-        time.sleep(3)
+        try:
+            visible_select_btns = driver.find_elements(AppiumBy.XPATH, '//*[@text="상품 선택하기"]')
+            if visible_select_btns:
+                select_btn = visible_select_btns[0]
+                print("[성공] 화면에 이미 노출된 '상품 선택하기' 버튼 발견")
+            else:
+                scroll_to_button = (
+                    'new UiScrollable(new UiSelector().scrollable(true))'
+                    '.scrollIntoView(new UiSelector().text("상품 선택하기"))'
+                )
+                select_btn = driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, scroll_to_button)
+                print("[성공] 스크롤하여 '상품 선택하기' 버튼 발견")
+            
+            select_btn.click()
+            time.sleep(3)
+        except Exception as e:
+            raise AssertionError(f"버그 검출: '상품 선택하기' 버튼을 찾거나 클릭할 수 없습니다. 원인: {e}")
 
         try:
             active_btn = WebDriverWait(driver, 5).until(
@@ -114,6 +133,9 @@ def run_moneymove_test():
             print(f"[정보] 최초 확인된 예치금 잔액: {balance:,}원")
         except Exception as e:
             balance = 0
+
+        # [핵심] 정합성 비교를 위한 최초 잔액 원본 보관
+        initial_balance = balance
 
         if balance < 10000:
             print("[안내] 잔액이 1만원 미만입니다. 입금 확인 재시도를 시작합니다.")
@@ -149,13 +171,8 @@ def run_moneymove_test():
         else:
             print("[성공] 예치금 1만원 이상 검증 통과!")
             
-            # --------------------------------------------------------------------
-            # [순수 해상도 비율 탭 & Y 좌표 자동 탐색 루프 (0.86 ~ 0.90)]
-            # --------------------------------------------------------------------
             target_units = min(balance // 10000, 500)
             input_value = str(target_units)
-            
-            print(f"💰 계산된 입력값: '{input_value}' (순수 해상도 비율 좌표 계산 시작)")
             
             window_size = driver.get_window_size()
             screen_width = window_size['width']
@@ -185,7 +202,6 @@ def run_moneymove_test():
                     
             time.sleep(0.5)
             
-            # Y 좌표 자동 탐색 루프
             y_ratios_to_try = [0.86, 0.88, 0.90]
             confirm_success = False
 
@@ -205,35 +221,29 @@ def run_moneymove_test():
                     WebDriverWait(driver, 1.5).until(
                         EC.invisibility_of_element_located((AppiumBy.XPATH, '//android.app.AlertDialog[@resource-id="inputAmount"]'))
                     )
-                    print(f"✅ [성공] Y 비율 {y_ratio} 지점에서 확인 버튼 인식 완료!")
                     confirm_success = True
                     break
                 except Exception:
                     time.sleep(0.5)
 
             if not confirm_success:
-                raise AssertionError("버그 검출: 모든 Y 좌표(0.86~0.90)에서 확인 버튼 탭이 실패했습니다.")
+                raise AssertionError("버그 검출: 모든 Y 좌표에서 확인 버튼 탭이 실패했습니다.")
                 
             time.sleep(1.0)
             
-            # '투자하기' 버튼 가시성 검증 및 미노출 시 복구(Fallback) 로직
             target_btn_xpath = '//android.widget.Button[contains(@text, "개 상품에 투자하기") or contains(@text, "투자하기")]'
             
             try:
-                print("🔍 '투자하기' 버튼이 화면에 정상 노출되는지 확인 중...")
                 final_invest_btn = WebDriverWait(driver, 3).until(
                     EC.element_to_be_clickable((AppiumBy.XPATH, target_btn_xpath))
                 )
-                print("✅ [성공] '투자하기' 버튼 가시성 확인 완료!")
             except Exception:
-                print("⚠️ [알림] '투자하기' 버튼이 즉시 보이지 않습니다. '투자금액 설정 닫기'를 통한 복구 로직을 실행합니다.")
                 try:
                     close_setting_btn = driver.find_element(AppiumBy.XPATH, '//android.widget.Button[@content-desc="투자금액 설정 닫기"]')
                     close_setting_btn.click()
-                    print("🔄 '투자금액 설정 닫기' 버튼 클릭 성공")
                     time.sleep(1.0)
-                except Exception as close_err:
-                    print(f"[참고] 닫기 버튼 탐색 실패 혹은 이미 닫힘: {close_err}")
+                except Exception:
+                    pass
                 
                 try:
                     re_active_btn = WebDriverWait(driver, 3).until(
@@ -249,14 +259,9 @@ def run_moneymove_test():
                 )
                 
             final_invest_btn.click()
-            print("🚀 최종 '투자하기' 버튼 클릭 완료!")
             time.sleep(3.0)
             
-            # --------------------------------------------------------------------
-            # [개선] 투자 동의 화면: 불필요한 중복 스크롤 제거 및 안정적인 id-agree 탐색
-            # --------------------------------------------------------------------
-            print("📜 투자 동의 화면: 필수 약관 체크 및 '동의함' 입력 진행 중...")
-            
+            # 투자 동의 화면: 필수 약관 체크 및 '동의함' 입력
             try:
                 scroll_disclosure = (
                     'new UiScrollable(new UiSelector().scrollable(true))'
@@ -277,34 +282,26 @@ def run_moneymove_test():
             except Exception:
                 pass
 
-            # [핵심 수정] 불필요한 스크롤 코드를 제거하고, 바로 '동의함' 입력 필드 유연하게 탐색 후 입력
             try:
-                print("🔍 '동의함' 입력 필드(`id-agree`) 대기 및 입력 중...")
                 agree_input_field = WebDriverWait(driver, 5).until(
                     EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.EditText[contains(@resource-id, "id-agree")]'))
                 )
                 agree_input_field.click()
                 agree_input_field.clear()
                 agree_input_field.send_keys("동의함")
-                print("✅ '동의함' 텍스트 입력 완료!")
                 time.sleep(1.0)
-            except Exception as e:
-                print(f"⚠️ 입력 필드 즉시 탐색 실패, 가벼운 스크롤 후 재시도: {e}")
-                try:
-                    scroll_input_simple = (
-                        'new UiScrollable(new UiSelector().scrollable(true))'
-                        '.scrollIntoView(new UiSelector().resourceIdMatches(".*id-agree.*"))'
-                    )
-                    driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, scroll_input_simple)
-                    agree_input_field = wait.until(
-                        EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.EditText[contains(@resource-id, "id-agree")]'))
-                    )
-                    agree_input_field.click()
-                    agree_input_field.clear()
-                    agree_input_field.send_keys("동의함")
-                    print("✅ 스크롤 후 '동의함' 텍스트 입력 완료!")
-                except Exception as ex:
-                    raise AssertionError(f"버그 검출: '동의함' 입력 필드를 찾거나 입력할 수 없습니다. 원인: {ex}")
+            except Exception:
+                scroll_input_simple = (
+                    'new UiScrollable(new UiSelector().scrollable(true))'
+                    '.scrollIntoView(new UiSelector().resourceIdMatches(".*id-agree.*"))'
+                )
+                driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, scroll_input_simple)
+                agree_input_field = wait.until(
+                    EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.EditText[contains(@resource-id, "id-agree")]'))
+                )
+                agree_input_field.click()
+                agree_input_field.clear()
+                agree_input_field.send_keys("동의함")
 
             try:
                 scroll_final_btn = (
@@ -317,12 +314,101 @@ def run_moneymove_test():
                     EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.Button[@text="위 내용에 모두 동의 합니다."]'))
                 )
                 final_agree_btn.click()
-                print("🚀 '위 내용에 모두 동의 합니다.' 버튼 클릭 성공! 최종 투자 신청 완료.")
                 time.sleep(3.0)
             except Exception as e:
                 raise e
 
-            return True
+            # 리뷰 팝업 조건부 처리
+            try:
+                WebDriverWait(driver, 4).until(
+                    EC.presence_of_element_located((AppiumBy.XPATH, '//android.widget.TextView[@text="투자자님들의 의견이 중요해요!"]'))
+                )
+                close_review_btn = wait.until(
+                    EC.element_to_be_clickable((AppiumBy.XPATH, '//android.view.ViewGroup/android.view.View/android.view.View/android.view.View/android.view.View[1]/android.widget.Button'))
+                )
+                close_review_btn.click()
+                time.sleep(1.0)
+            except Exception:
+                pass
+
+            # 투자 취소 진입: 내 원리금수취권 확인하기 -> 상세보기 바로가기
+            try:
+                scroll_to_my_rights = (
+                    'new UiScrollable(new UiSelector().scrollable(true))'
+                    '.scrollIntoView(new UiSelector().text("내 원리금수취권 확인하기"))'
+                )
+                driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, scroll_to_my_rights)
+                
+                my_rights_btn = wait.until(
+                    EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.Button[@text="내 원리금수취권 확인하기"]'))
+                )
+                my_rights_btn.click()
+                time.sleep(2.5)
+            except Exception as e:
+                raise AssertionError(f"버그 검출: '내 원리금수취권 확인하기' 진입 실패: {e}")
+
+            try:
+                detail_rights_btn = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.Button[@content-desc="상세보기 바로가기"])[1]'))
+                )
+                detail_rights_btn.click()
+                time.sleep(2.5)
+            except Exception as e:
+                raise AssertionError(f"버그 검출: 원리금수취권 상세 화면 진입 실패: {e}")
+
+            # 상세 화면 채권 번호 검증
+            try:
+                scroll_to_detail_bond = (
+                    f'new UiScrollable(new UiSelector().scrollable(true))'
+                    f'.scrollIntoView(new UiSelector().text("{captured_bond_text}"))'
+                )
+                detail_bond_element = driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, scroll_to_detail_bond)
+                found_bond_text = detail_bond_element.text
+                
+                if found_bond_text != captured_bond_text:
+                    raise AssertionError(f"채권 번호 불일치! 투자 전({captured_bond_text}) != 상세({found_bond_text})")
+            except Exception as e:
+                raise AssertionError(f"버그 검출: 상세 화면 채권 번호 검증 실패: {e}")
+
+            # '투자취소' 버튼 탐색 및 클릭
+            try:
+                cancel_btn = None
+                for attempt in range(1, 5):
+                    try:
+                        cancel_btn = driver.find_element(AppiumBy.XPATH, '//android.widget.Button[@text="투자취소"]')
+                        if cancel_btn.is_displayed():
+                            break
+                    except Exception:
+                        pass
+                    driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, 'new UiScrollable(new UiSelector().scrollable(true)).scrollForward()')
+                    time.sleep(0.8)
+                
+                if not cancel_btn:
+                    raise TimeoutException("'투자취소' 버튼을 찾지 못했습니다.")
+                
+                cancel_btn.click()
+                time.sleep(2.0)
+            except Exception as e:
+                raise AssertionError(f"버그 검출: '투자취소' 버튼 클릭 실패: {e}")
+
+            # 취소 동의 화면: 서명 입력 및 키보드 제어
+            try:
+                member_name = os.getenv('MEMBER_NAME', '홍길동')
+                sign_input_field = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.EditText[contains(@resource-id, "id-sign")]'))
+                )
+                sign_input_field.click()
+                sign_input_field.clear()
+                sign_input_field.send_keys(member_name)
+                time.sleep(0.5)
+
+                try:
+                    driver.hide_keyboard()
+                    time.sleep(1.0)
+                except Exception:
+                    pass
+            except Exception as e:
+                raise AssertionError(f"버그 검출: 서명 입력 실패: {e}")
 
     except Exception as e:
         print(f"❌ 자동화 테스트 진행 중 오류 발생: {e}")
@@ -338,3 +424,34 @@ def run_moneymove_test():
 
 if __name__ == '__main__':
     run_moneymove_test()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
