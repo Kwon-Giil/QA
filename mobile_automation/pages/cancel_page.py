@@ -12,7 +12,7 @@ class CancelPage(BasePage):
         try:
             self.scroll_into_view_by_text("내 원리금수취권 확인하기")
             self.click((AppiumBy.XPATH, '//android.widget.Button[@text="내 원리금수취권 확인하기"]'))
-            time.sleep(2.5)
+            time.sleep(2)
         except Exception as e:
             raise AssertionError(f"버그 검출: '내 원리금수취권 확인하기' 진입 실패: {e}")
 
@@ -42,7 +42,7 @@ class CancelPage(BasePage):
                 except Exception:
                     pass
                 self.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, 'new UiScrollable(new UiSelector().scrollable(true)).scrollForward()')
-                time.sleep(0.8)
+                time.sleep(1)
             
             if not cancel_btn:
                 raise TimeoutException("'투자취소' 버튼을 찾지 못했습니다.")
@@ -58,7 +58,7 @@ class CancelPage(BasePage):
             time.sleep(0.5)
             try:
                 self.driver.hide_keyboard()
-                time.sleep(1.0)
+                time.sleep(1)
             except Exception:
                 pass
         except Exception as e:
@@ -67,7 +67,7 @@ class CancelPage(BasePage):
         try:
             print("🔍 서명 입력 후 취소 요청 제출 '확인' 버튼 클릭 중...")
             self.click((AppiumBy.XPATH, '(//android.widget.Button[@text="확인"])[last()]'))
-            time.sleep(2.0)
+            time.sleep(2)
         except Exception as e:
             raise AssertionError(f"버그 검출: 취소 요청 제출 버튼 클릭 실패: {e}")
 
@@ -77,7 +77,7 @@ class CancelPage(BasePage):
             completion_xpath = '//android.app.AlertDialog//android.widget.Button[@text="확인"] | (//*[contains(@text, "확인")])[last()]'
             self.click((AppiumBy.XPATH, completion_xpath))
             print("🚀 [성공] 취소 완료 화면의 '확인' 버튼 정밀 클릭 완료!")
-            time.sleep(3.0)
+            time.sleep(3)
         except Exception as e:
             raise AssertionError(f"버그 검출: 취소 완료 화면의 '확인' 버튼 클릭 실패: {e}")
 
@@ -89,7 +89,7 @@ class CancelPage(BasePage):
 
             self.click((AppiumBy.XPATH, '//android.view.View[@text="내 투자"]'))
             print("✅ '내 투자' 메뉴 진입 성공")
-            time.sleep(2.5)
+            time.sleep(2)
 
             precise_balance_xpath = '//android.view.View[@resource-id="wrap"]/android.view.View[2]/android.view.View[2]/android.view.View[6]//android.view.View[contains(@text, "원") or contains(@text, ",")]'
             

@@ -10,7 +10,7 @@ class LoginPage(BasePage):
         
         for digit in pin_str:
             self.click((AppiumBy.XPATH, f'//*[@text="{digit}"]'))
-            time.sleep(0.3)
+            time.sleep(0.2)
             
         print("✨ 핀 번호 입력이 완료되었습니다!")
         time.sleep(3)
